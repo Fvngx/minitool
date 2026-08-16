@@ -1,0 +1,73 @@
+/**
+ * 收藏常用工具、通用历史记录。
+ * 历史只留最近若干条，防止本地撑爆。
+ */
+import { readList, writeList, nowId, nowText, objStr, makeObj } from './store.uts'
+
+const FAV_KEY = 'fav_tools'
+const HIS_KEY = 'tool_history'
+const HIS_LIMIT = 30
+
+export function loadFavIds() : string[] {
+	const list = readList(FAV_KEY)
+	const ids : string[] = []
+	for (let i = 0; i < list.length; i++) {
+		ids.push(objStr(list[i], 'id', ''))
+	}
+	return ids
+}
+
+export function isFav(id : string) : boolean {
+	const ids = loadFavIds()
+	for (let i = 0; i < ids.length; i++) {
+		if (ids[i] == id) {
+			return true
+		}
+	}
+	return false
+}
+
+export function toggleFav(id : string) : boolean {
+	const list = readList(FAV_KEY)
+	const next : UTSJSONObject[] = []
+	let found = false
+	for (let i = 0; i < list.length; i++) {
+		if (objStr(list[i], 'id', '') == id) {
+			found = true
+		} else {
+			next.push(list[i])
+		}
+	}
+	if (!found) {
+		next.unshift(makeObj(['id', id, 'at', nowText()]))
+	}
+	writeList(FAV_KEY, next)
+	return !found
+}
+
+export function pushHistory(toolId : string, title : string, payload : string) {
+	const list = readList(HIS_KEY)
+	const item = makeObj([
+		'id', nowId(),
+		'toolId', toolId,
+		'title', title,
+		'payload', payload,
+		'at', nowText()
+	])
+	const next : UTSJSONObject[] = [item]
+	for (let i = 0; i < list.length; i++) {
+		if (next.length >= HIS_LIMIT) {
+			break
+		}
+		next.push(list[i])
+	}
+	writeList(HIS_KEY, next)
+}
+
+export function loadHistory() : UTSJSONObject[] {
+	return readList(HIS_KEY)
+}
+
+export function clearHistory() {
+	writeList(HIS_KEY, [] as UTSJSONObject[])
+}

@@ -1,0 +1,132 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<text class="muted">不是单次生成。重点是你自己的模板下次直接调，只改几个字。</text>
+			<view class="chip" v-for="p in presets" :key="p.name" @click="usePreset(p.body, p.name)">
+				<text>{{ p.cate }} · {{ p.name }}</text>
+			</view>
+		</view>
+		<view class="card">
+			<input class="input" :value="name" @input="onName" placeholder="模板名" />
+			<view class="gap"></view>
+			<textarea class="area" :value="body" @input="onBody" placeholder="正文，占位符写成 {{产品}} 这种"></textarea>
+			<view class="gap"></view>
+			<view class="kv" v-for="(k, i) in keys" :key="k">
+				<text class="muted">{{ k }}</text>
+				<input class="input" :value="vals[i]" :data-i="i" @input="onVal" :placeholder="'填 ' + k" />
+			</view>
+			<text class="btn" @click="fill">套进占位符</text>
+			<view class="gap"></view>
+			<textarea class="area" :value="out" placeholder="结果"></textarea>
+			<view class="gap"></view>
+			<text class="btn-ghost" @click="save">保存为我的模板</text>
+			<view class="gap"></view>
+			<text class="btn-line" @click="copyText(out)">复制结果</text>
+		</view>
+		<view class="card">
+			<text class="sec">我的模板</text>
+			<view class="item" v-for="it in list" :key="it.id" @click="useMine(it)">
+				<text>{{ it.name }}</text>
+				<text class="del" @click.stop="del(it.id)">删</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="uts">
+	import { COPY_PRESETS, collectPlaceholders, fillTemplate } from '../../common/copydata.uts'
+	import { fillLocal } from '../../common/ai.uts'
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
+	import { objStr, copyText } from '../../common/store.uts'
+	import { pushHistory } from '../../common/user.uts'
+
+	type Row = { id : string, name : string, payload : string }
+
+	const KEY = 'copy_tpl'
+	const name = ref('短视频标题')
+	const body = ref(COPY_PRESETS[0].body)
+	const keys = ref([] as string[])
+	const vals = ref([] as string[])
+	const out = ref('')
+	const list = ref([] as Row[])
+	const presets = ref(COPY_PRESETS)
+
+	function refreshKeys() {
+		keys.value = collectPlaceholders(body.value)
+		const n : string[] = []
+		for (let i = 0; i < keys.value.length; i++) {
+			n.push(i < vals.value.length ? vals.value[i] : '')
+		}
+		vals.value = n
+	}
+
+	function onName(e : UniInputEvent) { name.value = e.detail.value }
+	function onBody(e : UniInputEvent) {
+		body.value = e.detail.value
+		refreshKeys()
+	}
+	function onVal(e : UniInputEvent) {
+		const i = parseInt('' + e.currentTarget.dataset['i'])
+		const n : string[] = []
+		for (let k = 0; k < vals.value.length; k++) {
+			n.push(k == i ? e.detail.value : vals.value[k])
+		}
+		vals.value = n
+	}
+
+	function usePreset(b : string, n : string) {
+		body.value = b
+		name.value = n
+		vals.value = [] as string[]
+		refreshKeys()
+	}
+
+	function useMine(it : Row) {
+		name.value = it.name
+		body.value = it.payload
+		vals.value = [] as string[]
+		refreshKeys()
+	}
+
+	function fill() {
+		out.value = fillLocal(fillTemplate(body.value, keys.value, vals.value), '')
+	}
+
+	function save() {
+		saveNamedItem(KEY, name.value, body.value, 40)
+		pushHistory('copy', name.value, body.value)
+		reload()
+		uni.showToast({ title: '模板已存', icon: 'none' })
+	}
+
+	function del(id : string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const outList : Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			outList.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', '模板'),
+				payload: objStr(arr[i], 'payload', '')
+			} as Row)
+		}
+		list.value = outList
+	}
+
+	onLoad(() => {
+		refreshKeys()
+		reload()
+	})
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.chip { padding: 16rpx 0; border-top: 1px solid #E7DFD3; font-size: 26rpx; }
+	.kv { margin-bottom: 12rpx; }
+	.item { flex-direction: row; justify-content: space-between; padding: 16rpx 0; border-top: 1px solid #E7DFD3; }
+	.del { color: #C2410C; font-size: 22rpx; }
+</style>

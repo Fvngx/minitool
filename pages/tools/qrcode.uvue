@@ -1,0 +1,128 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<input class="input" :value="title" @input="onTitle" placeholder="模板名，比如 店铺群" />
+			<view class="gap"></view>
+			<input class="input" :value="url" @input="onUrl" placeholder="链接或文本，下次不用重新贴" />
+			<view class="gap"></view>
+			<text class="btn" @click="draw">生成本地二维码</text>
+			<view class="gap"></view>
+			<text class="btn-ghost" @click="saveTpl">保存为二维码模板</text>
+			<canvas id="qr" class="qr" width="240" height="240"></canvas>
+			<text class="err" v-if="err.length > 0">{{ err }}</text>
+		</view>
+		<view class="card">
+			<text class="sec">我的二维码模板</text>
+			<view class="item" v-for="it in list" :key="it.id" @click="load(it)">
+				<view class="tool-main">
+					<text class="item-name">{{ it.name }}</text>
+					<text class="item-sub">{{ it.payload }}</text>
+				</view>
+				<text class="del" @click.stop="del(it.id)">删</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="uts">
+	import { makeQrMatrix } from '../../common/qrcode.uts'
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
+	import { objStr } from '../../common/store.uts'
+	import { pushHistory } from '../../common/user.uts'
+
+	type Row = { id : string, name : string, payload : string }
+
+	const KEY = 'qr_tpl'
+	const title = ref('店铺')
+	const url = ref('')
+	const err = ref('')
+	const list = ref([] as Row[])
+
+	function onTitle(e : UniInputEvent) { title.value = e.detail.value }
+	function onUrl(e : UniInputEvent) { url.value = e.detail.value }
+
+	function draw() {
+		err.value = ''
+		if (url.value.trim().length == 0) {
+			err.value = '先填内容'
+			return
+		}
+		try {
+			const m = makeQrMatrix(url.value.trim())
+			const size = m.length
+			const node = uni.getElementById('qr') as UniCanvasElement | null
+			if (node == null) {
+				err.value = '画布还没准备好，再点一次'
+				return
+			}
+			const ctx = node.getContext('2d')
+			if (ctx == null) {
+				err.value = '当前端不支持 canvas 2d，模板仍可保存'
+				return
+			}
+			const w = 240
+			const cell = w / size
+			ctx.fillStyle = '#ffffff'
+			ctx.fillRect(0, 0, w, w)
+			ctx.fillStyle = '#111111'
+			for (let y = 0; y < size; y++) {
+				for (let x = 0; x < size; x++) {
+					if (m[y][x] == 1) {
+						ctx.fillRect(x * cell, y * cell, cell, cell)
+					}
+				}
+			}
+		} catch (e) {
+			err.value = '' + e
+		}
+	}
+
+	function saveTpl() {
+		if (url.value.trim().length == 0) {
+			err.value = '先填内容'
+			return
+		}
+		saveNamedItem(KEY, title.value, url.value.trim(), 20)
+		pushHistory('qrcode', title.value, url.value.trim())
+		reload()
+		uni.showToast({ title: '模板已存', icon: 'none' })
+		draw()
+	}
+
+	function load(it : Row) {
+		title.value = it.name
+		url.value = it.payload
+		draw()
+	}
+
+	function del(id : string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const out : Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			out.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', '模板'),
+				payload: objStr(arr[i], 'payload', '')
+			} as Row)
+		}
+		list.value = out
+	}
+
+	onReady(() => { reload() })
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.qr { width: 240px; height: 240px; margin-top: 20rpx; background-color: #fff; }
+	.err { color: #C2410C; font-size: 24rpx; margin-top: 12rpx; }
+	.item { flex-direction: row; padding: 16rpx 0; border-top: 1px solid #E7DFD3; align-items: center; }
+	.tool-main { flex: 1; }
+	.item-name { font-size: 28rpx; }
+	.item-sub { font-size: 22rpx; color: #7A7268; }
+	.del { color: #C2410C; font-size: 22rpx; }
+</style>

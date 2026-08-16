@@ -1,0 +1,80 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<input class="input" :value="name" @input="onName" placeholder="话术名，比如 加微话术" />
+			<view class="gap"></view>
+			<textarea class="area" :value="body" @input="onBody" placeholder="内容。销售、客服、HR 反复用的那几句。"></textarea>
+			<view class="gap"></view>
+			<text class="btn" @click="save">保存到收藏夹</text>
+		</view>
+		<view class="card">
+			<text class="sec">我的话术</text>
+			<view class="item" v-for="it in list" :key="it.id">
+				<text class="item-name">{{ it.name }}</text>
+				<text class="item-sub">{{ it.payload }}</text>
+				<view class="row">
+					<text class="btn-ghost half" @click="copyText(it.payload)">复制</text>
+					<text class="btn-line half" @click="del(it.id)">删除</text>
+				</view>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="uts">
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
+	import { objStr, copyText } from '../../common/store.uts'
+	import { pushHistory } from '../../common/user.uts'
+
+	type Row = { id : string, name : string, payload : string }
+
+	const KEY = 'snip_tpl'
+	const name = ref('')
+	const body = ref('')
+	const list = ref([] as Row[])
+
+	function onName(e : UniInputEvent) { name.value = e.detail.value }
+	function onBody(e : UniInputEvent) { body.value = e.detail.value }
+
+	function save() {
+		if (body.value.trim().length == 0) {
+			uni.showToast({ title: '先写内容', icon: 'none' })
+			return
+		}
+		const n = name.value.trim().length == 0 ? body.value.substring(0, 12) : name.value.trim()
+		saveNamedItem(KEY, n, body.value, 50)
+		pushHistory('snippets', n, body.value)
+		name.value = ''
+		body.value = ''
+		reload()
+	}
+
+	function del(id : string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const out : Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			out.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', '话术'),
+				payload: objStr(arr[i], 'payload', '')
+			} as Row)
+		}
+		list.value = out
+	}
+
+	onShow(() => { reload() })
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.item { padding: 18rpx 0; border-top: 1px solid #E7DFD3; }
+	.item-name { font-size: 28rpx; font-weight: 600; }
+	.item-sub { font-size: 24rpx; color: #7A7268; margin: 8rpx 0 12rpx; }
+	.row { flex-direction: row; }
+	.half { flex: 1; margin-right: 12rpx; }
+</style>

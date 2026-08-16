@@ -1,0 +1,42 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<text class="muted">引流用。压缩在本地，不上传。要留人请去「图片尺寸模板」存方案。</text>
+			<view class="gap"></view>
+			<text class="btn" @click="pick">选图并压缩</text>
+			<image v-if="path.length > 0" class="preview" :src="path" mode="aspectFit"></image>
+			<text class="muted" v-if="info.length > 0">{{ info }}</text>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="uts">
+	const path = ref('')
+	const info = ref('')
+
+	function pick() {
+		uni.chooseImage({
+			count: 1,
+			success: (res) => {
+				if (res.tempFilePaths.length == 0) return
+				const src = res.tempFilePaths[0]
+				uni.compressImage({
+					src: src,
+					quality: 70,
+					success: (r) => {
+						path.value = r.tempFilePath
+						info.value = '已压到约 70% 质量，文件仍在本机临时目录。'
+					},
+					fail: () => {
+						path.value = src
+						info.value = '当前端没有 compressImage，已保留原图预览。'
+					}
+				})
+			}
+		})
+	}
+</script>
+
+<style>
+	.preview { width: 100%; height: 360rpx; margin-top: 16rpx; background-color: #EEE8DC; }
+</style>

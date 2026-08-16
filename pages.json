@@ -1,0 +1,94 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "工具箱",
+				"navigationBarBackgroundColor": "#F4EFE6",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/mine/mine",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#F4EFE6",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/tools/json",
+			"style": { "navigationBarTitleText": "JSON 格式化" }
+		},
+		{
+			"path": "pages/tools/image-size",
+			"style": { "navigationBarTitleText": "图片尺寸模板" }
+		},
+		{
+			"path": "pages/tools/qrcode",
+			"style": { "navigationBarTitleText": "二维码模板" }
+		},
+		{
+			"path": "pages/tools/snippets",
+			"style": { "navigationBarTitleText": "话术收藏夹" }
+		},
+		{
+			"path": "pages/tools/copy",
+			"style": { "navigationBarTitleText": "文案模板库" }
+		},
+		{
+			"path": "pages/tools/keywords",
+			"style": { "navigationBarTitleText": "关键词清单" }
+		},
+		{
+			"path": "pages/tools/timestamp",
+			"style": { "navigationBarTitleText": "时间戳换算" }
+		},
+		{
+			"path": "pages/tools/password",
+			"style": { "navigationBarTitleText": "密码规则" }
+		},
+		{
+			"path": "pages/tools/palette",
+			"style": { "navigationBarTitleText": "常用色板" }
+		},
+		{
+			"path": "pages/tools/todo",
+			"style": { "navigationBarTitleText": "简易清单" }
+		},
+		{
+			"path": "pages/tools/word-count",
+			"style": { "navigationBarTitleText": "字数统计" }
+		},
+		{
+			"path": "pages/tools/image-compress",
+			"style": { "navigationBarTitleText": "图片压缩" }
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "工具箱",
+		"navigationBarBackgroundColor": "#F4EFE6",
+		"backgroundColor": "#F4EFE6"
+	},
+	"tabBar": {
+		"color": "#7A7268",
+		"selectedColor": "#C2410C",
+		"backgroundColor": "#FFFcf7",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"text": "工具箱",
+				"iconPath": "static/tab/home.png",
+				"selectedIconPath": "static/tab/home-active.png"
+			},
+			{
+				"pagePath": "pages/mine/mine",
+				"text": "我的",
+				"iconPath": "static/tab/mine.png",
+				"selectedIconPath": "static/tab/mine-active.png"
+			}
+		]
+	}
+}
