@@ -21,27 +21,27 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
-	import { objStr, copyText } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
+<script setup lang="ts">
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr, copyText } from '../../common/store'
+	import { pushHistory } from '../../common/user'
 
-	type Row = { id : string, name : string, payload : string }
+	type Row = { id: string, name: string, payload: string }
 
 	const KEY = 'snip_tpl'
 	const name = ref('')
 	const body = ref('')
 	const list = ref([] as Row[])
 
-	function onName(e : UniInputEvent) { name.value = e.detail.value }
-	function onBody(e : UniInputEvent) { body.value = e.detail.value }
+	function onName(e: UniInputEvent) { name.value = e.detail.value }
+	function onBody(e: UniInputEvent) { body.value = e.detail.value }
 
 	function save() {
 		if (body.value.trim().length == 0) {
 			uni.showToast({ title: '先写内容', icon: 'none' })
 			return
 		}
-		const n = name.value.trim().length == 0 ? body.value.substring(0, 12) : name.value.trim()
+		const n = name.value.trim().length == 0 ? body.value.substring(0, 12): name.value.trim()
 		saveNamedItem(KEY, n, body.value, 50)
 		pushHistory('snippets', n, body.value)
 		name.value = ''
@@ -49,14 +49,14 @@
 		reload()
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const out : Row[] = []
+		const out: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			out.push({
 				id: objStr(arr[i], 'id', '' + i),

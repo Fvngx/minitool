@@ -16,17 +16,17 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { loadNamedList, saveNamedItem, removeNamedItem, upsertNamedItem } from '../../common/named.uts'
-	import { objStr } from '../../common/store.uts'
+<script setup lang="ts">
+	import { loadNamedList, saveNamedItem, removeNamedItem, upsertNamedItem } from '../../common/named'
+	import { objStr } from '../../common/store'
 
-	type Row = { id : string, name : string, done : boolean }
+	type Row = { id: string, name: string, done: boolean }
 
 	const KEY = 'todo_list'
 	const text = ref('')
 	const list = ref([] as Row[])
 
-	function onText(e : UniInputEvent) { text.value = e.detail.value }
+	function onText(e: UniInputEvent) { text.value = e.detail.value }
 
 	function add() {
 		if (text.value.trim().length == 0) return
@@ -35,7 +35,7 @@
 		reload()
 	}
 
-	function toggle(id : string) {
+	function toggle(id: string) {
 		const arr = loadNamedList(KEY)
 		for (let i = 0; i < arr.length; i++) {
 			if (objStr(arr[i], 'id', '') == id) {
@@ -46,14 +46,14 @@
 		reload()
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const out : Row[] = []
+		const out: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			out.push({
 				id: objStr(arr[i], 'id', '' + i),

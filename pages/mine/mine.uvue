@@ -28,25 +28,25 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { findTool } from '../../common/catalog.uts'
-	import { loadHistory, clearHistory } from '../../common/user.uts'
-	import { objStr as take } from '../../common/store.uts'
+<script setup lang="ts">
+	import { findTool } from '../../common/catalog'
+	import { loadHistory, clearHistory } from '../../common/user'
+	import { objStr as take } from '../../common/store'
 
 	type His = {
-		id : string
-		title : string
-		tool : string
-		toolId : string
-		payload : string
-		at : string
+		id: string
+		title: string
+		tool: string
+		toolId: string
+		payload: string
+		at: string
 	}
 
 	type Jump = {
-		id : string
-		name : string
-		path : string
-		hint : string
+		id: string
+		name: string
+		path: string
+		hint: string
 	}
 
 	const hist = ref([] as His[])
@@ -61,7 +61,7 @@
 
 	function reload() {
 		const list = loadHistory()
-		const out : His[] = []
+		const out: His[] = []
 		for (let i = 0; i < list.length; i++) {
 			const it = list[i]
 			const toolId = take(it, 'toolId', '')
@@ -69,7 +69,7 @@
 			out.push({
 				id: take(it, 'id', '' + i),
 				title: take(it, 'title', '未命名'),
-				tool: tool == null ? toolId : tool.name,
+				tool: tool == null ? toolId: tool.name,
 				toolId: toolId,
 				payload: take(it, 'payload', ''),
 				at: take(it, 'at', '')
@@ -78,11 +78,11 @@
 		hist.value = out
 	}
 
-	function open(path : string) {
+	function open(path: string) {
 		uni.navigateTo({ url: path })
 	}
 
-	function openHis(h : His) {
+	function openHis(h: His) {
 		const tool = findTool(h.toolId)
 		if (tool == null) {
 			return

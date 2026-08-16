@@ -24,13 +24,13 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { splitWords, sortWords, joinWords } from '../../common/words.uts'
-	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
-	import { objStr } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
+<script setup lang="ts">
+	import { splitWords, sortWords, joinWords } from '../../common/words'
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr } from '../../common/store'
+	import { pushHistory } from '../../common/user'
 
-	type Row = { id : string, name : string, payload : string }
+	type Row = { id: string, name: string, payload: string }
 
 	const KEY = 'kw_tpl'
 	const name = ref('投放词')
@@ -38,8 +38,8 @@
 	const count = ref(0)
 	const list = ref([] as Row[])
 
-	function onName(e : UniInputEvent) { name.value = e.detail.value }
-	function onRaw(e : UniInputEvent) {
+	function onName(e: UniInputEvent) { name.value = e.detail.value }
+	function onRaw(e: UniInputEvent) {
 		raw.value = e.detail.value
 		count.value = splitWords(raw.value).length
 	}
@@ -62,20 +62,20 @@
 		uni.showToast({ title: '词表已存', icon: 'none' })
 	}
 
-	function load(it : Row) {
+	function load(it: Row) {
 		name.value = it.name
 		raw.value = it.payload
 		count.value = splitWords(raw.value).length
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const out : Row[] = []
+		const out: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			out.push({
 				id: objStr(arr[i], 'id', '' + i),

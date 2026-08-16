@@ -2,9 +2,9 @@
  * JSON 美化 / 压缩。纯字符串扫描，不走 eval，输入再怪也不执行。
  */
 
-export function formatJson(raw : string) : string {
+export function formatJson(raw: string): string {
 	const src = raw.trim()
-	if (src.length == 0) {
+	if (src.length === 0) {
 		throw new Error('内容是空的')
 	}
 	let out = ''
@@ -17,28 +17,27 @@ export function formatJson(raw : string) : string {
 			out += ch
 			if (escape) {
 				escape = false
-			} else if (ch == '\\') {
+			} else if (ch === '\\') {
 				escape = true
-			} else if (ch == '"') {
+			} else if (ch === '"') {
 				inStr = false
 			}
 			continue
 		}
-		if (ch == '"') {
+		if (ch === '"') {
 			inStr = true
 			out += ch
 			continue
 		}
-		if (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t') {
+		if (ch === ' ' || ch === '\n' || ch === '\r' || ch === '\t') {
 			continue
 		}
-		if (ch == '{' || ch == '[') {
-			out += ch + '\n'
+		if (ch === '{' || ch === '[') {
 			indent++
-			out += pad(indent)
+			out += ch + '\n' + pad(indent)
 			continue
 		}
-		if (ch == '}' || ch == ']') {
+		if (ch === '}' || ch === ']') {
 			indent--
 			if (indent < 0) {
 				throw new Error('括号对不上')
@@ -46,11 +45,11 @@ export function formatJson(raw : string) : string {
 			out += '\n' + pad(indent) + ch
 			continue
 		}
-		if (ch == ',') {
+		if (ch === ',') {
 			out += ch + '\n' + pad(indent)
 			continue
 		}
-		if (ch == ':') {
+		if (ch === ':') {
 			out += ': '
 			continue
 		}
@@ -59,13 +58,13 @@ export function formatJson(raw : string) : string {
 	if (inStr) {
 		throw new Error('字符串没闭合')
 	}
-	if (indent != 0) {
+	if (indent !== 0) {
 		throw new Error('括号对不上')
 	}
 	return out
 }
 
-export function minifyJson(raw : string) : string {
+export function minifyJson(raw: string): string {
 	const pretty = formatJson(raw)
 	let out = ''
 	let inStr = false
@@ -76,19 +75,19 @@ export function minifyJson(raw : string) : string {
 			out += ch
 			if (escape) {
 				escape = false
-			} else if (ch == '\\') {
+			} else if (ch === '\\') {
 				escape = true
-			} else if (ch == '"') {
+			} else if (ch === '"') {
 				inStr = false
 			}
 			continue
 		}
-		if (ch == '"') {
+		if (ch === '"') {
 			inStr = true
 			out += ch
 			continue
 		}
-		if (ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t') {
+		if (ch === ' ' || ch === '\n' || ch === '\r' || ch === '\t') {
 			continue
 		}
 		out += ch
@@ -96,10 +95,6 @@ export function minifyJson(raw : string) : string {
 	return out
 }
 
-function pad(n : number) : string {
-	let s = ''
-	for (let i = 0; i < n; i++) {
-		s += '  '
-	}
-	return s
+function pad(n: number): string {
+	return '  '.repeat(n)
 }

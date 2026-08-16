@@ -24,18 +24,18 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { formatJson, minifyJson } from '../../common/jsonfmt.uts'
-	import { loadNamedList, prependUnique, removeNamedItem } from '../../common/named.uts'
-	import { objStr } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
-	import { copyText } from '../../common/store.uts'
+<script setup lang="ts">
+	import { formatJson, minifyJson } from '../../common/jsonfmt'
+	import { loadNamedList, prependUnique, removeNamedItem } from '../../common/named'
+	import { objStr } from '../../common/store'
+	import { pushHistory } from '../../common/user'
+	import { copyText } from '../../common/store'
 
 	type Row = {
-		id : string
-		name : string
-		payload : string
-		at : string
+		id: string
+		name: string
+		payload: string
+		at: string
 	}
 
 	const KEY = 'json_his'
@@ -43,7 +43,7 @@
 	const err = ref('')
 	const list = ref([] as Row[])
 
-	function onRaw(e : UniInputEvent) {
+	function onRaw(e: UniInputEvent) {
 		raw.value = e.detail.value
 	}
 
@@ -83,18 +83,18 @@
 		}
 	}
 
-	function load(payload : string) {
+	function load(payload: string) {
 		raw.value = payload
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const out : Row[] = []
+		const out: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			out.push({
 				id: objStr(arr[i], 'id', '' + i),
@@ -106,7 +106,7 @@
 		list.value = out
 	}
 
-	onLoad((q : OnLoadOptions) => {
+	onLoad((q: OnLoadOptions) => {
 		reload()
 		if (q != null && q['payload'] != null) {
 			raw.value = decodeURIComponent('' + q['payload'])

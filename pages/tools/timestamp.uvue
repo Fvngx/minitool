@@ -24,19 +24,19 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { loadNamedList, prependUnique } from '../../common/named.uts'
-	import { objStr } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
+<script setup lang="ts">
+	import { loadNamedList, prependUnique } from '../../common/named'
+	import { objStr } from '../../common/store'
+	import { pushHistory } from '../../common/user'
 
-	type Row = { id : string, name : string, payload : string, at : string }
+	type Row = { id: string, name: string, payload: string, at: string }
 
 	const KEY = 'ts_his'
 	const input = ref('')
 	const out = ref('')
 	const list = ref([] as Row[])
 
-	function onIn(e : UniInputEvent) { input.value = e.detail.value }
+	function onIn(e: UniInputEvent) { input.value = e.detail.value }
 
 	function useNow() {
 		const n = Date.now()
@@ -44,13 +44,13 @@
 		out.value = '毫秒 ' + n + '\n秒 ' + Math.floor(n / 1000) + '\n' + formatDate(n)
 	}
 
-	function formatDate(ms : number) : string {
+	function formatDate(ms: number): string {
 		const d = new Date(ms)
 		return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds())
 	}
 
-	function p(n : number) : string {
-		return n < 10 ? '0' + n : '' + n
+	function p(n: number): string {
+		return n < 10 ? '0' + n: '' + n
 	}
 
 	function toDate() {
@@ -83,13 +83,13 @@
 		reload()
 	}
 
-	function load(payload : string) {
+	function load(payload: string) {
 		out.value = payload
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const rows : Row[] = []
+		const rows: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			rows.push({
 				id: objStr(arr[i], 'id', '' + i),

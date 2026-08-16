@@ -33,14 +33,14 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { COPY_PRESETS, collectPlaceholders, fillTemplate } from '../../common/copydata.uts'
-	import { fillLocal } from '../../common/ai.uts'
-	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
-	import { objStr, copyText } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
+<script setup lang="ts">
+	import { COPY_PRESETS, collectPlaceholders, fillTemplate } from '../../common/copydata'
+	import { fillLocal } from '../../common/ai'
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr, copyText } from '../../common/store'
+	import { pushHistory } from '../../common/user'
 
-	type Row = { id : string, name : string, payload : string }
+	type Row = { id: string, name: string, payload: string }
 
 	const KEY = 'copy_tpl'
 	const name = ref('短视频标题')
@@ -53,35 +53,35 @@
 
 	function refreshKeys() {
 		keys.value = collectPlaceholders(body.value)
-		const n : string[] = []
+		const n: string[] = []
 		for (let i = 0; i < keys.value.length; i++) {
-			n.push(i < vals.value.length ? vals.value[i] : '')
+			n.push(i < vals.value.length ? vals.value[i]: '')
 		}
 		vals.value = n
 	}
 
-	function onName(e : UniInputEvent) { name.value = e.detail.value }
-	function onBody(e : UniInputEvent) {
+	function onName(e: UniInputEvent) { name.value = e.detail.value }
+	function onBody(e: UniInputEvent) {
 		body.value = e.detail.value
 		refreshKeys()
 	}
-	function onVal(e : UniInputEvent) {
+	function onVal(e: UniInputEvent) {
 		const i = parseInt('' + e.currentTarget.dataset['i'])
-		const n : string[] = []
+		const n: string[] = []
 		for (let k = 0; k < vals.value.length; k++) {
-			n.push(k == i ? e.detail.value : vals.value[k])
+			n.push(k == i ? e.detail.value: vals.value[k])
 		}
 		vals.value = n
 	}
 
-	function usePreset(b : string, n : string) {
+	function usePreset(b: string, n: string) {
 		body.value = b
 		name.value = n
 		vals.value = [] as string[]
 		refreshKeys()
 	}
 
-	function useMine(it : Row) {
+	function useMine(it: Row) {
 		name.value = it.name
 		body.value = it.payload
 		vals.value = [] as string[]
@@ -99,14 +99,14 @@
 		uni.showToast({ title: '模板已存', icon: 'none' })
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const outList : Row[] = []
+		const outList: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			outList.push({
 				id: objStr(arr[i], 'id', '' + i),

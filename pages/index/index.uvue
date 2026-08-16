@@ -43,23 +43,24 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { TOOLS, flowTools, keepTools, ToolItem } from '../../common/catalog.uts'
-	import { isFav, toggleFav } from '../../common/user.uts'
+<script setup lang="ts">
+	import { TOOLS, flowTools, keepTools } from '../../common/catalog'
+	import type { ToolItem } from '../../common/catalog'
+	import { isFav, toggleFav } from '../../common/user'
 
 	type Card = {
-		id : string
-		name : string
-		desc : string
-		path : string
-		fav : boolean
+		id: string
+		name: string
+		desc: string
+		path: string
+		fav: boolean
 	}
 
 	const favs = ref([] as Card[])
 	const flows = ref([] as Card[])
 	const keeps = ref([] as Card[])
 
-	function toCard(t : ToolItem) : Card {
+	function toCard(t: ToolItem): Card {
 		return {
 			id: t.id,
 			name: t.name,
@@ -70,20 +71,20 @@
 	}
 
 	function reload() {
-		const f : Card[] = []
+		const f: Card[] = []
 		for (let i = 0; i < TOOLS.length; i++) {
 			if (isFav(TOOLS[i].id)) {
 				f.push(toCard(TOOLS[i]))
 			}
 		}
 		favs.value = f
-		const a : Card[] = []
+		const a: Card[] = []
 		const ft = flowTools()
 		for (let i = 0; i < ft.length; i++) {
 			a.push(toCard(ft[i]))
 		}
 		flows.value = a
-		const b : Card[] = []
+		const b: Card[] = []
 		const kt = keepTools()
 		for (let i = 0; i < kt.length; i++) {
 			b.push(toCard(kt[i]))
@@ -91,11 +92,11 @@
 		keeps.value = b
 	}
 
-	function open(path : string) {
+	function open(path: string) {
 		uni.navigateTo({ url: path })
 	}
 
-	function star(id : string) {
+	function star(id: string) {
 		toggleFav(id)
 		reload()
 	}

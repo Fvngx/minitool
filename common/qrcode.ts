@@ -4,7 +4,7 @@
  * 内容过长会提示分段，避免 silently 出错。
  */
 
-export function makeQrMatrix(text : string) : number[][] {
+export function makeQrMatrix(text: string): number[][] {
 	const data = encodeBytes(text)
 	const version = pickVersion(data.length)
 	if (version < 1) {
@@ -14,7 +14,7 @@ export function makeQrMatrix(text : string) : number[][] {
 	const dataCap = dataCw(version)
 	const padded = padData(data, dataCap)
 	const ecc = rsEncode(padded, eccLen)
-	const codewords : number[] = []
+	const codewords: number[] = []
 	for (let i = 0; i < padded.length; i++) {
 		codewords.push(padded[i])
 	}
@@ -37,8 +37,8 @@ export function makeQrMatrix(text : string) : number[][] {
 	return matrix
 }
 
-function encodeBytes(text : string) : number[] {
-	const bytes : number[] = []
+function encodeBytes(text: string): number[] {
+	const bytes: number[] = []
 	for (let i = 0; i < text.length; i++) {
 		const c = text.charCodeAt(i)
 		if (c < 128) {
@@ -54,7 +54,7 @@ function encodeBytes(text : string) : number[] {
 			}
 		}
 	}
-	const bits : number[] = []
+	const bits: number[] = []
 	pushBits(bits, 4, 4)
 	pushBits(bits, bytes.length, 8)
 	for (let i = 0; i < bytes.length; i++) {
@@ -64,7 +64,7 @@ function encodeBytes(text : string) : number[] {
 	while (bits.length % 8 != 0) {
 		bits.push(0)
 	}
-	const cw : number[] = []
+	const cw: number[] = []
 	for (let i = 0; i < bits.length; i += 8) {
 		let v = 0
 		for (let b = 0; b < 8; b++) {
@@ -75,13 +75,13 @@ function encodeBytes(text : string) : number[] {
 	return cw
 }
 
-function pushBits(bits : number[], value : number, len : number) {
+function pushBits(bits: number[], value: number, len: number) {
 	for (let i = len - 1; i >= 0; i--) {
 		bits.push((value >> i) & 1)
 	}
 }
 
-function pickVersion(dataLen : number) : number {
+function pickVersion(dataLen: number): number {
 	for (let v = 1; v <= 6; v++) {
 		if (dataLen <= dataCw(v)) {
 			return v
@@ -90,7 +90,7 @@ function pickVersion(dataLen : number) : number {
 	return -1
 }
 
-function dataCw(v : number) : number {
+function dataCw(v: number): number {
 	if (v == 1) return 19
 	if (v == 2) return 34
 	if (v == 3) return 55
@@ -99,7 +99,7 @@ function dataCw(v : number) : number {
 	return 136
 }
 
-function eccCount(v : number) : number {
+function eccCount(v: number): number {
 	if (v == 1) return 7
 	if (v == 2) return 10
 	if (v == 3) return 15
@@ -108,12 +108,12 @@ function eccCount(v : number) : number {
 	return 18
 }
 
-function padData(data : number[], cap : number) : number[] {
-	const out : number[] = []
+function padData(data: number[], cap: number): number[] {
+	const out: number[] = []
 	for (let i = 0; i < data.length && i < cap; i++) {
 		out.push(data[i])
 	}
-	const pads : number[] = [0xEC, 0x11]
+	const pads: number[] = [0xEC, 0x11]
 	let p = 0
 	while (out.length < cap) {
 		out.push(pads[p % 2])
@@ -122,8 +122,8 @@ function padData(data : number[], cap : number) : number[] {
 	return out
 }
 
-let EXP : number[] = [] as number[]
-let LOG : number[] = [] as number[]
+let EXP: number[] = [] as number[]
+let LOG: number[] = [] as number[]
 
 function initGF() {
 	if (EXP.length > 0) {
@@ -147,7 +147,7 @@ function initGF() {
 	EXP[255] = EXP[0]
 }
 
-function gfMul(a : number, b : number) : number {
+function gfMul(a: number, b: number): number {
 	initGF()
 	if (a == 0 || b == 0) {
 		return 0
@@ -155,9 +155,9 @@ function gfMul(a : number, b : number) : number {
 	return EXP[(LOG[a] + LOG[b]) % 255]
 }
 
-function rsEncode(data : number[], eccLen : number) : number[] {
+function rsEncode(data: number[], eccLen: number): number[] {
 	const generator = rsGenerator(eccLen)
-	const poly : number[] = []
+	const poly: number[] = []
 	for (let i = 0; i < data.length; i++) {
 		poly.push(data[i])
 	}
@@ -173,18 +173,18 @@ function rsEncode(data : number[], eccLen : number) : number[] {
 			poly[i + j] = poly[i + j] ^ gfMul(generator[j], coef)
 		}
 	}
-	const ecc : number[] = []
+	const ecc: number[] = []
 	for (let i = data.length; i < poly.length; i++) {
 		ecc.push(poly[i])
 	}
 	return ecc
 }
 
-function rsGenerator(eccLen : number) : number[] {
+function rsGenerator(eccLen: number): number[] {
 	initGF()
-	let gen : number[] = [1]
+	let gen: number[] = [1]
 	for (let i = 0; i < eccLen; i++) {
-		const next : number[] = []
+		const next: number[] = []
 		for (let k = 0; k < gen.length + 1; k++) {
 			next.push(0)
 		}
@@ -197,10 +197,10 @@ function rsGenerator(eccLen : number) : number[] {
 	return gen
 }
 
-function emptyMatrix(size : number) : number[][] {
-	const m : number[][] = []
+function emptyMatrix(size: number): number[][] {
+	const m: number[][] = []
 	for (let y = 0; y < size; y++) {
-		const row : number[] = []
+		const row: number[] = []
 		for (let x = 0; x < size; x++) {
 			row.push(-1)
 		}
@@ -209,7 +209,7 @@ function emptyMatrix(size : number) : number[][] {
 	return m
 }
 
-function fillRect(m : number[][], x : number, y : number, w : number, h : number, v : number) {
+function fillRect(m: number[][], x: number, y: number, w: number, h: number, v: number) {
 	for (let j = 0; j < h; j++) {
 		for (let i = 0; i < w; i++) {
 			m[y + j][x + i] = v
@@ -217,13 +217,13 @@ function fillRect(m : number[][], x : number, y : number, w : number, h : number
 	}
 }
 
-function placeFinder(m : number[][], x : number, y : number) {
+function placeFinder(m: number[][], x: number, y: number) {
 	fillRect(m, x, y, 7, 7, 1)
 	fillRect(m, x + 1, y + 1, 5, 5, 0)
 	fillRect(m, x + 2, y + 2, 3, 3, 1)
 }
 
-function placeFinders(m : number[][], size : number) {
+function placeFinders(m: number[][], size: number) {
 	placeFinder(m, 0, 0)
 	placeFinder(m, size - 7, 0)
 	placeFinder(m, 0, size - 7)
@@ -237,24 +237,24 @@ function placeFinders(m : number[][], size : number) {
 	}
 }
 
-function setIf(m : number[][], x : number, y : number, v : number) {
+function setIf(m: number[][], x: number, y: number, v: number) {
 	if (y >= 0 && y < m.length && x >= 0 && x < m[0].length) {
 		m[y][x] = v
 	}
 }
 
-function placeTiming(m : number[][], size : number) {
+function placeTiming(m: number[][], size: number) {
 	for (let i = 8; i < size - 8; i++) {
-		m[6][i] = i % 2 == 0 ? 1 : 0
-		m[i][6] = i % 2 == 0 ? 1 : 0
+		m[6][i] = i % 2 == 0 ? 1: 0
+		m[i][6] = i % 2 == 0 ? 1: 0
 	}
 }
 
-function placeDark(m : number[][], version : number) {
+function placeDark(m: number[][], version: number) {
 	m[4 * version + 9][8] = 1
 }
 
-function alignPos(version : number) : number[] {
+function alignPos(version: number): number[] {
 	if (version == 2) return [6, 18]
 	if (version == 3) return [6, 22]
 	if (version == 4) return [6, 26]
@@ -263,7 +263,7 @@ function alignPos(version : number) : number[] {
 	return [] as number[]
 }
 
-function placeAlign(m : number[][], version : number) {
+function placeAlign(m: number[][], version: number) {
 	const pos = alignPos(version)
 	for (let a = 0; a < pos.length; a++) {
 		for (let b = 0; b < pos.length; b++) {
@@ -279,7 +279,7 @@ function placeAlign(m : number[][], version : number) {
 	}
 }
 
-function placeFormatReserve(m : number[][], size : number) {
+function placeFormatReserve(m: number[][], size: number) {
 	for (let i = 0; i < 9; i++) {
 		if (m[8][i] < 0) m[8][i] = 0
 		if (m[i][8] < 0) m[i][8] = 0
@@ -290,8 +290,8 @@ function placeFormatReserve(m : number[][], size : number) {
 	}
 }
 
-function fillData(m : number[][], size : number, codewords : number[]) {
-	const bits : number[] = []
+function fillData(m: number[][], size: number, codewords: number[]) {
+	const bits: number[] = []
 	for (let i = 0; i < codewords.length; i++) {
 		for (let b = 7; b >= 0; b--) {
 			bits.push((codewords[i] >> b) & 1)
@@ -305,7 +305,7 @@ function fillData(m : number[][], size : number, codewords : number[]) {
 			x--
 		}
 		for (let i = 0; i < size; i++) {
-			const y = dir < 0 ? size - 1 - i : i
+			const y = dir < 0 ? size - 1 - i: i
 			for (let dx = 0; dx < 2; dx++) {
 				const xx = x - dx
 				if (m[y][xx] == -1) {
@@ -323,7 +323,7 @@ function fillData(m : number[][], size : number, codewords : number[]) {
 	}
 }
 
-function applyMask(m : number[][], size : number, mask : number) {
+function applyMask(m: number[][], size: number, mask: number) {
 	for (let y = 0; y < size; y++) {
 		for (let x = 0; x < size; x++) {
 			if (isFunction(m, x, y, size)) {
@@ -334,13 +334,13 @@ function applyMask(m : number[][], size : number, mask : number) {
 				flip = (x + y) % 2 == 0
 			}
 			if (flip) {
-				m[y][x] = m[y][x] == 1 ? 0 : 1
+				m[y][x] = m[y][x] == 1 ? 0: 1
 			}
 		}
 	}
 }
 
-function isFunction(m : number[][], x : number, y : number, size : number) : boolean {
+function isFunction(m: number[][], x: number, y: number, size: number): boolean {
 	if (y < 9 && x < 9) return true
 	if (y < 9 && x >= size - 8) return true
 	if (y >= size - 8 && x < 9) return true
@@ -350,7 +350,7 @@ function isFunction(m : number[][], x : number, y : number, size : number) : boo
 	return false
 }
 
-function placeFormat(m : number[][], size : number, mask : number) {
+function placeFormat(m: number[][], size: number, mask: number) {
 	// 纠错等级 L = 01，加上 mask，BCH 预计算 mask0
 	const bits = formatBits(mask)
 	const coords = [
@@ -371,7 +371,7 @@ function placeFormat(m : number[][], size : number, mask : number) {
 	}
 }
 
-function formatBits(mask : number) : number {
+function formatBits(mask: number): number {
 	// L + mask0 的标准 15 位格式信息
 	if (mask == 0) return 0x77C4
 	if (mask == 1) return 0x72F3

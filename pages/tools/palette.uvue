@@ -24,12 +24,12 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
-	import { objStr, copyText } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
+<script setup lang="ts">
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr, copyText } from '../../common/store'
+	import { pushHistory } from '../../common/user'
 
-	type Row = { id : string, name : string, payload : string }
+	type Row = { id: string, name: string, payload: string }
 
 	const KEY = 'pal_tpl'
 	const name = ref('封面配色')
@@ -37,8 +37,8 @@
 	const colors = ref(['#C2410C', '#F4EFE6', '#1C1916'] as string[])
 	const list = ref([] as Row[])
 
-	function onName(e : UniInputEvent) { name.value = e.detail.value }
-	function onHex(e : UniInputEvent) { hex.value = e.detail.value }
+	function onName(e: UniInputEvent) { name.value = e.detail.value }
+	function onHex(e: UniInputEvent) { hex.value = e.detail.value }
 
 	function addColor() {
 		let c = hex.value.trim()
@@ -58,19 +58,19 @@
 		reload()
 	}
 
-	function load(it : Row) {
+	function load(it: Row) {
 		name.value = it.name
 		colors.value = it.payload.split(',')
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const out : Row[] = []
+		const out: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			out.push({
 				id: objStr(arr[i], 'id', '' + i),

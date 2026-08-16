@@ -26,13 +26,13 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
-	import { objStr, objNum } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
+<script setup lang="ts">
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr, objNum } from '../../common/store'
+	import { pushHistory } from '../../common/user'
 
-	type Row = { id : string, name : string, payload : string }
-	type Preset = { name : string, w : number, h : number }
+	type Row = { id: string, name: string, payload: string }
+	type Preset = { name: string, w: number, h: number }
 
 	const KEY = 'size_tpl'
 	const src = ref('')
@@ -47,9 +47,9 @@
 		{ name: '详情长图', w: 750, h: 1000 } as Preset
 	])
 
-	function onW(e : UniInputEvent) { w.value = e.detail.value }
-	function onH(e : UniInputEvent) { h.value = e.detail.value }
-	function onName(e : UniInputEvent) { tplName.value = e.detail.value }
+	function onW(e: UniInputEvent) { w.value = e.detail.value }
+	function onH(e: UniInputEvent) { h.value = e.detail.value }
+	function onName(e: UniInputEvent) { tplName.value = e.detail.value }
 
 	function pick() {
 		uni.chooseImage({
@@ -62,13 +62,13 @@
 		})
 	}
 
-	function use(ww : number, hh : number, name : string) {
+	function use(ww: number, hh: number, name: string) {
 		w.value = '' + ww
 		h.value = '' + hh
 		tplName.value = name
 	}
 
-	function useStr(payload : string, name : string) {
+	function useStr(payload: string, name: string) {
 		try {
 			const o = JSON.parse(payload) as UTSJSONObject
 			w.value = '' + objNum(o, 'w', 1080)
@@ -85,14 +85,14 @@
 		uni.showToast({ title: '方案已存', icon: 'none' })
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const out : Row[] = []
+		const out: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			out.push({
 				id: objStr(arr[i], 'id', '' + i),

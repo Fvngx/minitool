@@ -1,4 +1,4 @@
-<script setup lang="uts">
+<script setup lang="ts">
 	// 应用级生命周期。uni-app x 的 App.uvue 用组合式，不要 export default。
 	onLaunch(() => {
 		console.log('留存工具箱启动')

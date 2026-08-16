@@ -1,7 +1,6 @@
 # 留存工具箱（uni-app x）
 
-给自媒体、电商运营、程序员用的小程序工具箱。  
-一次性功能只做引流；能回来，是因为模板、历史、常用配置都在本地。
+业务逻辑用 TypeScript（`common/*.ts`，页面 `<script setup lang="ts">`）。页面文件仍是 uni-app x 的 `.uvue`。
 
 ## 先把 H5 跑起来（不用 HBuilderX）
 

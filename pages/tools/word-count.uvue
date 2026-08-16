@@ -12,13 +12,13 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
+<script setup lang="ts">
 	const raw = ref('')
 	const chars = ref(0)
 	const noSpace = ref(0)
 	const lines = ref(0)
 
-	function onRaw(e : UniInputEvent) {
+	function onRaw(e: UniInputEvent) {
 		raw.value = e.detail.value
 		count()
 	}

@@ -24,13 +24,13 @@
 	</scroll-view>
 </template>
 
-<script setup lang="uts">
-	import { makeQrMatrix } from '../../common/qrcode.uts'
-	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named.uts'
-	import { objStr } from '../../common/store.uts'
-	import { pushHistory } from '../../common/user.uts'
+<script setup lang="ts">
+	import { makeQrMatrix } from '../../common/qrcode'
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr } from '../../common/store'
+	import { pushHistory } from '../../common/user'
 
-	type Row = { id : string, name : string, payload : string }
+	type Row = { id: string, name: string, payload: string }
 
 	const KEY = 'qr_tpl'
 	const title = ref('店铺')
@@ -38,8 +38,8 @@
 	const err = ref('')
 	const list = ref([] as Row[])
 
-	function onTitle(e : UniInputEvent) { title.value = e.detail.value }
-	function onUrl(e : UniInputEvent) { url.value = e.detail.value }
+	function onTitle(e: UniInputEvent) { title.value = e.detail.value }
+	function onUrl(e: UniInputEvent) { url.value = e.detail.value }
 
 	function draw() {
 		err.value = ''
@@ -89,20 +89,20 @@
 		draw()
 	}
 
-	function load(it : Row) {
+	function load(it: Row) {
 		title.value = it.name
 		url.value = it.payload
 		draw()
 	}
 
-	function del(id : string) {
+	function del(id: string) {
 		removeNamedItem(KEY, id)
 		reload()
 	}
 
 	function reload() {
 		const arr = loadNamedList(KEY)
-		const out : Row[] = []
+		const out: Row[] = []
 		for (let i = 0; i < arr.length; i++) {
 			out.push({
 				id: objStr(arr[i], 'id', '' + i),
