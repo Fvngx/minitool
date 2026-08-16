@@ -13,12 +13,21 @@ npm run dev:h5
 
 浏览器打开 `http://localhost:5173/` 。
 
-## 用 HBuilderX 打开
+## 用 IDE 打开
+
+**Cursor / VS Code**
+
+1. 拉分支 `cursor/uniappx-retention-toolbox-78bc`（或合并后的目录）
+2. 文件 → Open Folder，选仓库根目录（有 `manifest.json`、`pages.json` 的那一层，不要只开 `pages`）
+3. 建议装推荐插件：Volar、uni-helper（打开时会提示）
+4. 终端执行 `npm install` 后 `npm run dev:h5`
+
+**HBuilderX（跑微信小程序 / App 用这个）**
 
 1. 安装最新 [HBuilderX](https://www.dcloud.io/hbuilderx.html)
-2. 文件 → 打开目录，选本仓库
-3. 确认 `manifest.json` 里有 `"uni-app-x": {}`（圆形 U 图标）
-4. 运行到微信开发者工具 / 浏览器 / App 基座
+2. 文件 → 打开目录，选本仓库根目录
+3. 左侧应是圆形 U（uni-app x）。若认成普通 uni-app，看 `manifest.json` 是否有 `"uni-app-x": {}`，然后对项目右键「重新识别项目类型」
+4. 运行 → 运行到浏览器 / 微信开发者工具
 
 微信小程序 AppId 在 `manifest.json` → `mp-weixin.appid` 自己填。
 
@@ -33,7 +42,7 @@ npm run dev:h5
 
 全部 `uni.setStorageSync`，键名 `mt_` 前缀。不上服务器，不做 OCR / 去水印 / PDF 解密。
 
-文案模板先本地套 `{{占位符}}`。混元接口预留在 `common/ai.uts`，默认不联网。
+文案模板先本地套 `{{占位符}}`。混元接口预留在 `common/ai.ts`，默认不联网。
 
 ## 目录
 

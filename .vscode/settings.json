@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "*.uvue": "vue",
+    "*.uts": "typescript"
+  },
+  "volar.vueserver.configFilePath": "",
+  "editor.quickSuggestions": {
+    "strings": true
+  }
+}
