@@ -3,6 +3,17 @@
 给自媒体、电商运营、程序员用的小程序工具箱。  
 一次性功能只做引流；能回来，是因为模板、历史、常用配置都在本地。
 
+## 先把 H5 跑起来（不用 HBuilderX）
+
+```bash
+npm install
+# Linux 上若缺 UTS 原生包（npm 把 glibc 认成非 gnu）：
+# npm i @dcloudio/uts-linux-x64-gnu@3.0.0-alpha-5020320260803001 -D --force
+npm run dev:h5
+```
+
+浏览器打开 `http://localhost:5173/` 。
+
 ## 用 HBuilderX 打开
 
 1. 安装最新 [HBuilderX](https://www.dcloud.io/hbuilderx.html)
