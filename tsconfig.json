@@ -6,6 +6,10 @@
     "strict": false,
     "jsx": "preserve",
     "skipLibCheck": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
