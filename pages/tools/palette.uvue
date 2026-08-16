@@ -1,0 +1,93 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<input class="input" :value="name" @input="onName" placeholder="色板名，比如 秋季封面" />
+			<view class="gap"></view>
+			<input class="input" :value="hex" @input="onHex" placeholder="#C2410C" />
+			<view class="gap"></view>
+			<text class="btn" @click="addColor">加入当前色板</text>
+			<view class="swatch-row">
+				<view class="swatch" v-for="c in colors" :key="c" @click="copyText(c)">
+					<view class="dot" :style="{ backgroundColor: c }"></view>
+					<text>{{ c }}</text>
+				</view>
+			</view>
+			<text class="btn-ghost" @click="save">保存这组配色</text>
+		</view>
+		<view class="card">
+			<text class="sec">我的色板</text>
+			<view class="item" v-for="it in list" :key="it.id" @click="load(it)">
+				<text>{{ it.name }}</text>
+				<text class="del" @click.stop="del(it.id)">删</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr, copyText } from '../../common/store'
+	import { pushHistory } from '../../common/user'
+
+	type Row = { id: string, name: string, payload: string }
+
+	const KEY = 'pal_tpl'
+	const name = ref('封面配色')
+	const hex = ref('#C2410C')
+	const colors = ref(['#C2410C', '#F4EFE6', '#1C1916'] as string[])
+	const list = ref([] as Row[])
+
+	function onName(e: UniInputEvent) { name.value = e.detail.value }
+	function onHex(e: UniInputEvent) { hex.value = e.detail.value }
+
+	function addColor() {
+		let c = hex.value.trim()
+		if (c.length == 0) return
+		if (c.charAt(0) != '#') c = '#' + c
+		colors.value = colors.value.concat([c])
+	}
+
+	function save() {
+		let payload = ''
+		for (let i = 0; i < colors.value.length; i++) {
+			if (i > 0) payload += ','
+			payload += colors.value[i]
+		}
+		saveNamedItem(KEY, name.value, payload, 20)
+		pushHistory('palette', name.value, payload)
+		reload()
+	}
+
+	function load(it: Row) {
+		name.value = it.name
+		colors.value = it.payload.split(',')
+	}
+
+	function del(id: string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const out: Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			out.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', '色板'),
+				payload: objStr(arr[i], 'payload', '')
+			} as Row)
+		}
+		list.value = out
+	}
+
+	onLoad(() => { reload() })
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.swatch { flex-direction: row; align-items: center; padding: 12rpx 0; }
+	.dot { width: 36rpx; height: 36rpx; border-radius: 8rpx; margin-right: 12rpx; border: 1px solid #E7DFD3; }
+	.item { flex-direction: row; justify-content: space-between; padding: 16rpx 0; border-top: 1px solid #E7DFD3; }
+	.del { color: #C2410C; }
+</style>

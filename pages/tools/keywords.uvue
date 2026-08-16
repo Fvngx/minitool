@@ -1,0 +1,98 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<input class="input" :value="name" @input="onName" placeholder="词表名，比如 投放词-女装" />
+			<view class="gap"></view>
+			<textarea class="area" :value="raw" @input="onRaw" placeholder="一行一个，或用逗号隔开"></textarea>
+			<view class="gap"></view>
+			<view class="btns">
+				<text class="btn" @click="clean">去重</text>
+				<text class="btn-ghost" @click="sortIt">排序</text>
+			</view>
+			<view class="gap"></view>
+			<text class="muted">共 {{ count }} 个词</text>
+			<view class="gap"></view>
+			<text class="btn-line" @click="save">保存这份词表</text>
+		</view>
+		<view class="card">
+			<text class="sec">已存词表</text>
+			<view class="item" v-for="it in list" :key="it.id" @click="load(it)">
+				<text>{{ it.name }}</text>
+				<text class="del" @click.stop="del(it.id)">删</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { splitWords, sortWords, joinWords } from '../../common/words'
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr } from '../../common/store'
+	import { pushHistory } from '../../common/user'
+
+	type Row = { id: string, name: string, payload: string }
+
+	const KEY = 'kw_tpl'
+	const name = ref('投放词')
+	const raw = ref('')
+	const count = ref(0)
+	const list = ref([] as Row[])
+
+	function onName(e: UniInputEvent) { name.value = e.detail.value }
+	function onRaw(e: UniInputEvent) {
+		raw.value = e.detail.value
+		count.value = splitWords(raw.value).length
+	}
+
+	function clean() {
+		raw.value = joinWords(splitWords(raw.value))
+		count.value = splitWords(raw.value).length
+	}
+
+	function sortIt() {
+		raw.value = joinWords(sortWords(splitWords(raw.value)))
+		count.value = splitWords(raw.value).length
+	}
+
+	function save() {
+		clean()
+		saveNamedItem(KEY, name.value, raw.value, 20)
+		pushHistory('keywords', name.value, raw.value)
+		reload()
+		uni.showToast({ title: '词表已存', icon: 'none' })
+	}
+
+	function load(it: Row) {
+		name.value = it.name
+		raw.value = it.payload
+		count.value = splitWords(raw.value).length
+	}
+
+	function del(id: string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const out: Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			out.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', '词表'),
+				payload: objStr(arr[i], 'payload', '')
+			} as Row)
+		}
+		list.value = out
+	}
+
+	onLoad(() => { reload() })
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.btns { flex-direction: row; }
+	.btns .btn, .btns .btn-ghost { flex: 1; margin-right: 12rpx; }
+	.item { flex-direction: row; justify-content: space-between; padding: 16rpx 0; border-top: 1px solid #E7DFD3; }
+	.del { color: #C2410C; }
+</style>

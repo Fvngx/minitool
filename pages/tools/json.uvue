@@ -1,0 +1,127 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<textarea class="area" :value="raw" @input="onRaw" placeholder="把 JSON 贴进来。调试同一段就存历史，下次点一下。"></textarea>
+			<view class="gap"></view>
+			<view class="btns">
+				<text class="btn" @click="pretty">格式化</text>
+				<text class="btn-ghost" @click="mini">压缩</text>
+				<text class="btn-line" @click="copyOut">复制结果</text>
+			</view>
+			<view class="gap"></view>
+			<text class="btn-line" @click="saveHis">记入最近 10 条</text>
+			<text class="err" v-if="err.length > 0">{{ err }}</text>
+		</view>
+		<view class="card">
+			<text class="sec">最近记录</text>
+			<text class="empty" v-if="list.length == 0">还没有。格式化成功后点「记入」。</text>
+			<view class="item" v-for="it in list" :key="it.id" @click="load(it.payload)">
+				<text class="item-name">{{ it.name }}</text>
+				<text class="item-sub">{{ it.at }}</text>
+				<text class="del" @click.stop="del(it.id)">删</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { formatJson, minifyJson } from '../../common/jsonfmt'
+	import { loadNamedList, prependUnique, removeNamedItem } from '../../common/named'
+	import { objStr } from '../../common/store'
+	import { pushHistory } from '../../common/user'
+	import { copyText } from '../../common/store'
+
+	type Row = {
+		id: string
+		name: string
+		payload: string
+		at: string
+	}
+
+	const KEY = 'json_his'
+	const raw = ref('')
+	const err = ref('')
+	const list = ref([] as Row[])
+
+	function onRaw(e: UniInputEvent) {
+		raw.value = e.detail.value
+	}
+
+	function pretty() {
+		try {
+			raw.value = formatJson(raw.value)
+			err.value = ''
+		} catch (e) {
+			err.value = '' + e
+		}
+	}
+
+	function mini() {
+		try {
+			raw.value = minifyJson(raw.value)
+			err.value = ''
+		} catch (e) {
+			err.value = '' + e
+		}
+	}
+
+	function copyOut() {
+		copyText(raw.value)
+	}
+
+	function saveHis() {
+		try {
+			const text = formatJson(raw.value)
+			raw.value = text
+			const title = text.substring(0, 24)
+			prependUnique(KEY, title, text, 10)
+			pushHistory('json', title, text)
+			reload()
+			uni.showToast({ title: '记下了', icon: 'none' })
+		} catch (e) {
+			err.value = '' + e
+		}
+	}
+
+	function load(payload: string) {
+		raw.value = payload
+	}
+
+	function del(id: string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const out: Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			out.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', '片段'),
+				payload: objStr(arr[i], 'payload', ''),
+				at: objStr(arr[i], 'at', '')
+			} as Row)
+		}
+		list.value = out
+	}
+
+	onLoad((q: OnLoadOptions) => {
+		reload()
+		if (q != null && q['payload'] != null) {
+			raw.value = decodeURIComponent('' + q['payload'])
+		}
+	})
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.btns { flex-direction: row; }
+	.btns .btn, .btns .btn-ghost, .btns .btn-line { flex: 1; margin-right: 12rpx; }
+	.err { color: #C2410C; font-size: 24rpx; margin-top: 12rpx; }
+	.empty { font-size: 24rpx; color: #7A7268; margin-top: 8rpx; }
+	.item { padding: 16rpx 0; border-top: 1px solid #E7DFD3; flex-direction: row; align-items: center; }
+	.item-name { flex: 1; font-size: 26rpx; }
+	.item-sub { font-size: 22rpx; color: #7A7268; margin-right: 12rpx; }
+	.del { color: #C2410C; font-size: 22rpx; }
+</style>

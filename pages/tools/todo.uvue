@@ -1,0 +1,77 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<input class="input" :value="text" @input="onText" placeholder="加一条，不做协同，关掉还在" />
+			<view class="gap"></view>
+			<text class="btn" @click="add">加入清单</text>
+		</view>
+		<view class="card">
+			<view class="item" v-for="it in list" :key="it.id">
+				<text class="tick" @click="toggle(it.id)">{{ it.done ? '☑' : '☐' }}</text>
+				<text class="body" :class="it.done ? 'done' : ''">{{ it.name }}</text>
+				<text class="del" @click="del(it.id)">删</text>
+			</view>
+			<text class="empty" v-if="list.length == 0">空的。想到什么就记，别做成待办 App。</text>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { loadNamedList, saveNamedItem, removeNamedItem, upsertNamedItem } from '../../common/named'
+	import { objStr } from '../../common/store'
+
+	type Row = { id: string, name: string, done: boolean }
+
+	const KEY = 'todo_list'
+	const text = ref('')
+	const list = ref([] as Row[])
+
+	function onText(e: UniInputEvent) { text.value = e.detail.value }
+
+	function add() {
+		if (text.value.trim().length == 0) return
+		saveNamedItem(KEY, text.value.trim(), '0', 80)
+		text.value = ''
+		reload()
+	}
+
+	function toggle(id: string) {
+		const arr = loadNamedList(KEY)
+		for (let i = 0; i < arr.length; i++) {
+			if (objStr(arr[i], 'id', '') == id) {
+				const cur = objStr(arr[i], 'payload', '0')
+				upsertNamedItem(KEY, id, objStr(arr[i], 'name', ''), cur == '1' ? '0' : '1', 80)
+			}
+		}
+		reload()
+	}
+
+	function del(id: string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const out: Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			out.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', ''),
+				done: objStr(arr[i], 'payload', '0') == '1'
+			} as Row)
+		}
+		list.value = out
+	}
+
+	onShow(() => { reload() })
+</script>
+
+<style>
+	.item { flex-direction: row; align-items: center; padding: 18rpx 0; border-top: 1px solid #E7DFD3; }
+	.tick { width: 56rpx; font-size: 32rpx; }
+	.body { flex: 1; font-size: 28rpx; }
+	.done { color: #7A7268; text-decoration: line-through; }
+	.del { color: #C2410C; font-size: 22rpx; }
+	.empty { font-size: 24rpx; color: #7A7268; }
+</style>

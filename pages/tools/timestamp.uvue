@@ -1,0 +1,113 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<input class="input" :value="input" @input="onIn" placeholder="时间戳或 2026-08-16 12:00" />
+			<view class="gap"></view>
+			<view class="btns">
+				<text class="btn" @click="toDate">戳 → 日期</text>
+				<text class="btn-ghost" @click="toStamp">日期 → 戳</text>
+			</view>
+			<view class="gap"></view>
+			<text class="btn-line" @click="useNow">填入当前时间</text>
+			<view class="gap"></view>
+			<text class="sec">{{ out }}</text>
+			<view class="gap"></view>
+			<text class="btn-ghost" @click="save">记入历史</text>
+		</view>
+		<view class="card">
+			<text class="sec">最近换算</text>
+			<view class="item" v-for="it in list" :key="it.id" @click="load(it.payload)">
+				<text>{{ it.name }}</text>
+				<text class="item-sub">{{ it.at }}</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { loadNamedList, prependUnique } from '../../common/named'
+	import { objStr } from '../../common/store'
+	import { pushHistory } from '../../common/user'
+
+	type Row = { id: string, name: string, payload: string, at: string }
+
+	const KEY = 'ts_his'
+	const input = ref('')
+	const out = ref('')
+	const list = ref([] as Row[])
+
+	function onIn(e: UniInputEvent) { input.value = e.detail.value }
+
+	function useNow() {
+		const n = Date.now()
+		input.value = '' + n
+		out.value = '毫秒 ' + n + '\n秒 ' + Math.floor(n / 1000) + '\n' + formatDate(n)
+	}
+
+	function formatDate(ms: number): string {
+		const d = new Date(ms)
+		return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds())
+	}
+
+	function p(n: number): string {
+		return n < 10 ? '0' + n: '' + n
+	}
+
+	function toDate() {
+		let n = parseFloat(input.value.trim())
+		if (isNaN(n)) {
+			out.value = '不是数字时间戳'
+			return
+		}
+		if (n < 100000000000) {
+			n = n * 1000
+		}
+		out.value = formatDate(n)
+	}
+
+	function toStamp() {
+		const s = input.value.trim().replace('T', ' ')
+		const d = new Date(s)
+		const ms = d.getTime()
+		if (isNaN(ms)) {
+			out.value = '日期格式不对'
+			return
+		}
+		out.value = '毫秒 ' + ms + '\n秒 ' + Math.floor(ms / 1000)
+	}
+
+	function save() {
+		const payload = input.value + ' => ' + out.value
+		prependUnique(KEY, payload.substring(0, 36), payload, 10)
+		pushHistory('timestamp', '时间戳', payload)
+		reload()
+	}
+
+	function load(payload: string) {
+		out.value = payload
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const rows: Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			rows.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', ''),
+				payload: objStr(arr[i], 'payload', ''),
+				at: objStr(arr[i], 'at', '')
+			} as Row)
+		}
+		list.value = rows
+	}
+
+	onLoad(() => { reload() })
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.btns { flex-direction: row; }
+	.btns .btn, .btns .btn-ghost { flex: 1; margin-right: 12rpx; }
+	.item { padding: 16rpx 0; border-top: 1px solid #E7DFD3; }
+	.item-sub { font-size: 22rpx; color: #7A7268; }
+</style>

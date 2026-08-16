@@ -1,0 +1,118 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<text class="muted">核心不是改一次尺寸，是把你常用的封面规格存成方案，天天切。</text>
+			<view class="gap"></view>
+			<text class="btn" @click="pick">选一张图（仅本地处理）</text>
+			<image v-if="src.length > 0" class="preview" :src="src" mode="aspectFit"></image>
+			<view class="row2">
+				<input class="input" type="number" :value="w" @input="onW" placeholder="宽" />
+				<input class="input" type="number" :value="h" @input="onH" placeholder="高" />
+			</view>
+			<input class="input" :value="tplName" @input="onName" placeholder="方案名，比如 小红书封面" />
+			<view class="gap"></view>
+			<text class="btn-ghost" @click="saveTpl">保存为尺寸方案</text>
+		</view>
+		<view class="card">
+			<text class="sec">尺寸方案</text>
+			<view class="chip" v-for="p in presets" :key="p.name" @click="use(p.w, p.h, p.name)">
+				<text>{{ p.name }} {{ p.w }}×{{ p.h }}</text>
+			</view>
+			<view class="item" v-for="it in list" :key="it.id" @click="useStr(it.payload, it.name)">
+				<text class="item-name">{{ it.name }}</text>
+				<text class="del" @click.stop="del(it.id)">删</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { loadNamedList, saveNamedItem, removeNamedItem } from '../../common/named'
+	import { objStr, objNum } from '../../common/store'
+	import { pushHistory } from '../../common/user'
+
+	type Row = { id: string, name: string, payload: string }
+	type Preset = { name: string, w: number, h: number }
+
+	const KEY = 'size_tpl'
+	const src = ref('')
+	const w = ref('1080')
+	const h = ref('1440')
+	const tplName = ref('小红书封面')
+	const list = ref([] as Row[])
+	const presets = ref([
+		{ name: '小红书封面', w: 1080, h: 1440 } as Preset,
+		{ name: '抖音竖版', w: 1080, h: 1920 } as Preset,
+		{ name: '电商主图', w: 800, h: 800 } as Preset,
+		{ name: '详情长图', w: 750, h: 1000 } as Preset
+	])
+
+	function onW(e: UniInputEvent) { w.value = e.detail.value }
+	function onH(e: UniInputEvent) { h.value = e.detail.value }
+	function onName(e: UniInputEvent) { tplName.value = e.detail.value }
+
+	function pick() {
+		uni.chooseImage({
+			count: 1,
+			success: (res) => {
+				if (res.tempFilePaths.length > 0) {
+					src.value = res.tempFilePaths[0]
+				}
+			}
+		})
+	}
+
+	function use(ww: number, hh: number, name: string) {
+		w.value = '' + ww
+		h.value = '' + hh
+		tplName.value = name
+	}
+
+	function useStr(payload: string, name: string) {
+		try {
+			const o = JSON.parse(payload) as UTSJSONObject
+			w.value = '' + objNum(o, 'w', 1080)
+			h.value = '' + objNum(o, 'h', 1440)
+			tplName.value = name
+		} catch (e) {}
+	}
+
+	function saveTpl() {
+		const payload = '{"w":' + parseInt(w.value) + ',"h":' + parseInt(h.value) + '}'
+		saveNamedItem(KEY, tplName.value, payload, 20)
+		pushHistory('image-size', tplName.value, payload)
+		reload()
+		uni.showToast({ title: '方案已存', icon: 'none' })
+	}
+
+	function del(id: string) {
+		removeNamedItem(KEY, id)
+		reload()
+	}
+
+	function reload() {
+		const arr = loadNamedList(KEY)
+		const out: Row[] = []
+		for (let i = 0; i < arr.length; i++) {
+			out.push({
+				id: objStr(arr[i], 'id', '' + i),
+				name: objStr(arr[i], 'name', '方案'),
+				payload: objStr(arr[i], 'payload', '')
+			} as Row)
+		}
+		list.value = out
+	}
+
+	onLoad(() => { reload() })
+</script>
+
+<style>
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.preview { width: 100%; height: 320rpx; margin-top: 16rpx; background-color: #EEE8DC; }
+	.row2 { flex-direction: row; margin: 16rpx 0; }
+	.row2 .input { flex: 1; margin-right: 12rpx; }
+	.chip { padding: 16rpx 0; border-top: 1px solid #E7DFD3; font-size: 26rpx; }
+	.item { flex-direction: row; padding: 16rpx 0; border-top: 1px solid #E7DFD3; }
+	.item-name { flex: 1; }
+	.del { color: #C2410C; font-size: 22rpx; }
+</style>

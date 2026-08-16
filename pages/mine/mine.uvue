@@ -1,0 +1,123 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="head">
+			<text class="h1">我的模板和历史</text>
+			<text class="sub">人回来不是因为工具炫，是因为这儿存着他自己的东西。</text>
+		</view>
+
+		<view class="card">
+			<view class="bar">
+				<text class="sec">最近用过</text>
+				<text class="link" @click="wipe">清空</text>
+			</view>
+			<text class="empty" v-if="hist.length == 0">还没有记录。去工具里点一次「保存」或「记一笔」。</text>
+			<view class="item" v-for="h in hist" :key="h.id" @click="openHis(h)">
+				<text class="item-name">{{ h.title }}</text>
+				<text class="item-sub">{{ h.tool }} · {{ h.at }}</text>
+			</view>
+		</view>
+
+		<view class="card">
+			<text class="sec">各工具自己的模板</text>
+			<text class="muted">点进去能直接加载上次存的方案</text>
+			<view class="jump" v-for="t in jumps" :key="t.id" @click="open(t.path)">
+				<text>{{ t.name }}</text>
+				<text class="muted">{{ t.hint }}</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { findTool } from '../../common/catalog'
+	import { loadHistory, clearHistory } from '../../common/user'
+	import { objStr as take } from '../../common/store'
+
+	type His = {
+		id: string
+		title: string
+		tool: string
+		toolId: string
+		payload: string
+		at: string
+	}
+
+	type Jump = {
+		id: string
+		name: string
+		path: string
+		hint: string
+	}
+
+	const hist = ref([] as His[])
+	const jumps = ref([
+		{ id: 'json', name: 'JSON 历史', path: '/pages/tools/json', hint: '最近 10 段' } as Jump,
+		{ id: 'image-size', name: '尺寸方案', path: '/pages/tools/image-size', hint: '封面/主图预设' } as Jump,
+		{ id: 'qrcode', name: '二维码模板', path: '/pages/tools/qrcode', hint: '店铺、社群链接' } as Jump,
+		{ id: 'snippets', name: '话术收藏', path: '/pages/tools/snippets', hint: '一键复制' } as Jump,
+		{ id: 'copy', name: '文案模板', path: '/pages/tools/copy', hint: '自定义保存' } as Jump,
+		{ id: 'keywords', name: '词表', path: '/pages/tools/keywords', hint: '反复维护' } as Jump
+	])
+
+	function reload() {
+		const list = loadHistory()
+		const out: His[] = []
+		for (let i = 0; i < list.length; i++) {
+			const it = list[i]
+			const toolId = take(it, 'toolId', '')
+			const tool = findTool(toolId)
+			out.push({
+				id: take(it, 'id', '' + i),
+				title: take(it, 'title', '未命名'),
+				tool: tool == null ? toolId: tool.name,
+				toolId: toolId,
+				payload: take(it, 'payload', ''),
+				at: take(it, 'at', '')
+			} as His)
+		}
+		hist.value = out
+	}
+
+	function open(path: string) {
+		uni.navigateTo({ url: path })
+	}
+
+	function openHis(h: His) {
+		const tool = findTool(h.toolId)
+		if (tool == null) {
+			return
+		}
+		uni.navigateTo({
+			url: tool.path + '?payload=' + encodeURIComponent(h.payload)
+		})
+	}
+
+	function wipe() {
+		uni.showModal({
+			title: '清空历史',
+			content: '只清总览里的最近用过，各工具自己的模板还在。',
+			success: (res) => {
+				if (res.confirm) {
+					clearHistory()
+					reload()
+				}
+			}
+		})
+	}
+
+	onShow(() => {
+		reload()
+	})
+</script>
+
+<style>
+	.head { padding: 12rpx 8rpx 28rpx; }
+	.sec { font-size: 30rpx; font-weight: 700; }
+	.bar { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 8rpx; }
+	.link { color: #C2410C; font-size: 24rpx; }
+	.empty { font-size: 26rpx; color: #7A7268; margin-top: 12rpx; }
+	.item { padding: 18rpx 0; border-top: 1px solid #E7DFD3; }
+	.item-name { font-size: 28rpx; }
+	.item-sub { font-size: 22rpx; color: #7A7268; margin-top: 4rpx; }
+	.jump { padding: 18rpx 0; border-top: 1px solid #E7DFD3; }
+</style>

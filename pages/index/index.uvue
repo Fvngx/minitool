@@ -1,0 +1,148 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="head">
+			<text class="h1">东西存在这儿，才愿意回来</text>
+			<text class="sub">模板、历史、常用工具都在本地。文件不上服务器，也不碰去水印这类功能。</text>
+		</view>
+
+		<view class="card" v-if="favs.length > 0">
+			<text class="sec">我的常用</text>
+			<text class="muted">首页置顶，少翻一遍</text>
+			<view class="tool" v-for="t in favs" :key="t.id" @click="open(t.path)">
+				<view class="tool-main">
+					<text class="tool-name">{{ t.name }}</text>
+					<text class="tool-desc">{{ t.desc }}</text>
+				</view>
+				<text class="star on" @click.stop="star(t.id)">已置顶</text>
+			</view>
+		</view>
+
+		<view class="card">
+			<text class="sec">热门引流</text>
+			<text class="muted">搜一搜能进来，但别当留客主力</text>
+			<view class="tool" v-for="t in flows" :key="t.id" @click="open(t.path)">
+				<view class="tool-main">
+					<text class="tool-name">{{ t.name }}</text>
+					<text class="tool-desc">{{ t.desc }}</text>
+				</view>
+				<text class="tag-flow">引流</text>
+			</view>
+		</view>
+
+		<view class="card">
+			<text class="sec">留存工具</text>
+			<text class="muted">能保存模板 / 历史 / 配置的才放这儿</text>
+			<view class="tool" v-for="t in keeps" :key="t.id" @click="open(t.path)">
+				<view class="tool-main">
+					<text class="tool-name">{{ t.name }}</text>
+					<text class="tool-desc">{{ t.desc }}</text>
+				</view>
+				<text class="star" :class="t.fav ? 'on' : ''" @click.stop="star(t.id)">{{ t.fav ? '已置顶' : '置顶' }}</text>
+			</view>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	import { TOOLS, flowTools, keepTools } from '../../common/catalog'
+	import type { ToolItem } from '../../common/catalog'
+	import { isFav, toggleFav } from '../../common/user'
+
+	type Card = {
+		id: string
+		name: string
+		desc: string
+		path: string
+		fav: boolean
+	}
+
+	const favs = ref([] as Card[])
+	const flows = ref([] as Card[])
+	const keeps = ref([] as Card[])
+
+	function toCard(t: ToolItem): Card {
+		return {
+			id: t.id,
+			name: t.name,
+			desc: t.desc,
+			path: t.path,
+			fav: isFav(t.id)
+		} as Card
+	}
+
+	function reload() {
+		const f: Card[] = []
+		for (let i = 0; i < TOOLS.length; i++) {
+			if (isFav(TOOLS[i].id)) {
+				f.push(toCard(TOOLS[i]))
+			}
+		}
+		favs.value = f
+		const a: Card[] = []
+		const ft = flowTools()
+		for (let i = 0; i < ft.length; i++) {
+			a.push(toCard(ft[i]))
+		}
+		flows.value = a
+		const b: Card[] = []
+		const kt = keepTools()
+		for (let i = 0; i < kt.length; i++) {
+			b.push(toCard(kt[i]))
+		}
+		keeps.value = b
+	}
+
+	function open(path: string) {
+		uni.navigateTo({ url: path })
+	}
+
+	function star(id: string) {
+		toggleFav(id)
+		reload()
+	}
+
+	onShow(() => {
+		reload()
+	})
+</script>
+
+<style>
+	.head {
+		padding: 12rpx 8rpx 28rpx;
+	}
+	.sec {
+		font-size: 30rpx;
+		font-weight: 700;
+	}
+	.tool {
+		flex-direction: row;
+		align-items: center;
+		padding: 22rpx 0;
+		border-top: 1px solid #E7DFD3;
+	}
+	.tool-main {
+		flex: 1;
+	}
+	.tool-name {
+		font-size: 30rpx;
+		font-weight: 600;
+	}
+	.tool-desc {
+		font-size: 24rpx;
+		color: #7A7268;
+		margin-top: 6rpx;
+	}
+	.star {
+		font-size: 22rpx;
+		color: #7A7268;
+		padding: 8rpx 14rpx;
+		border: 1px solid #E7DFD3;
+		border-radius: 999rpx;
+		margin-left: 12rpx;
+	}
+	.on {
+		color: #9A3412;
+		border-color: #F3D5C4;
+		background-color: #F3D5C4;
+	}
+</style>

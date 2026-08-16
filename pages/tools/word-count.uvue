@@ -1,0 +1,41 @@
+<template>
+	<scroll-view class="page" scroll-y="true">
+		<view class="card">
+			<text class="muted">引流用。统计完就走，想留人去话术和文案模板。</text>
+			<view class="gap"></view>
+			<textarea class="area" :value="raw" @input="onRaw" placeholder="贴文本"></textarea>
+			<view class="gap"></view>
+			<text>字数 {{ chars }}</text>
+			<text>去空白 {{ noSpace }}</text>
+			<text>行数 {{ lines }}</text>
+		</view>
+	</scroll-view>
+</template>
+
+<script setup lang="ts">
+	const raw = ref('')
+	const chars = ref(0)
+	const noSpace = ref(0)
+	const lines = ref(0)
+
+	function onRaw(e: UniInputEvent) {
+		raw.value = e.detail.value
+		count()
+	}
+
+	function count() {
+		const s = raw.value
+		chars.value = s.length
+		let ns = 0
+		for (let i = 0; i < s.length; i++) {
+			const ch = s.charAt(i)
+			if (ch != ' ' && ch != '\n' && ch != '\t' && ch != '\r') ns++
+		}
+		noSpace.value = ns
+		if (s.length == 0) {
+			lines.value = 0
+			return
+		}
+		lines.value = s.split('\n').length
+	}
+</script>
